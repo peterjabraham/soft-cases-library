@@ -36,6 +36,47 @@ logger = structlog.get_logger()
 router = APIRouter(tags=["citation-intelligence"])
 
 
+# ── Scored result response schema ───────────────────────────────────────────
+
+class ScoredResultResponse(BaseModel):
+    id: str
+    run_id: str
+    raw_result_id: str
+    content_type: str
+    url: Optional[str]
+    doi: Optional[str]
+    arxiv_id: Optional[str]
+    title: Optional[str]
+    authors: Optional[list[str]]
+    abstract_or_snippet: Optional[str]
+    published_date: Optional[str]
+    venue: Optional[str]
+    source_tier: Optional[int]
+    tier_multiplier: Optional[float]
+    pillar: Optional[str]
+    cluster_name: Optional[str]
+    subtopic: Optional[str]
+    matched_keywords: Optional[list[str]]
+    keyword_density: Optional[float]
+    topical_relevance: Optional[float]
+    citation_count: Optional[int]
+    citation_velocity: Optional[float]
+    influential_citations: Optional[int]
+    venue_tier: Optional[int]
+    is_preprint: bool
+    arxiv_categories: Optional[list[str]]
+    category_tier: Optional[int]
+    raw_score: Optional[float]
+    final_score: Optional[float]
+    score_confidence: Optional[int]
+    excluded: bool
+    excluded_reason: Optional[str]
+    discovered_by: Optional[list[str]]
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 # ── Health ─────────────────────────────────────────────────────────────────
 
 @router.get("/health")
@@ -243,7 +284,7 @@ async def get_run_jobs(run_id: str, db: AsyncSession = Depends(get_db)):
     ]
 
 
-@router.get("/runs/{run_id}/results")
+@router.get("/runs/{run_id}/results", response_model=list[ScoredResultResponse])
 async def get_run_results(
     run_id: str,
     content_type: Optional[str] = None,

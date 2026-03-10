@@ -158,6 +158,7 @@ class CIScoredResult(Base):
     influential_citations: Mapped[int | None] = mapped_column(Integer, nullable=True)
     venue_tier: Mapped[int | None] = mapped_column(Integer, nullable=True)
     is_preprint: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    arxiv_categories: Mapped[list[str] | None] = mapped_column(ARRAY(String), nullable=True)
     category_tier: Mapped[int | None] = mapped_column(Integer, nullable=True)
     raw_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     final_score: Mapped[float | None] = mapped_column(Float, nullable=True)

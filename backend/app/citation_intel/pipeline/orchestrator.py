@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.citation_intel.cluster_parser import parse_cluster
 from app.citation_intel.pipeline.classifier import classify_batch
 from app.citation_intel.pipeline.deduplicator import deduplicate
+from app.citation_intel.pipeline.filter import apply_filter_config_gate
 from app.citation_intel.pipeline.raw_result import RawResultData
 from app.citation_intel.query_synthesiser import synthesise_all_queries
 from app.citation_intel.scoring.normaliser import normalise_citation_signals
@@ -306,6 +307,10 @@ async def _pipeline_inner(db: AsyncSession, run: CIRun, log) -> None:  # noqa: A
         kws = subtopic_keywords.get(r.subtopic, [])
         score(r, kws)
 
+    # Apply user-configured filter gate (stricter than the 0.25 pipeline gate)
+    user_min_relevance = (run.filter_config or {}).get("min_topical_relevance")
+    apply_filter_config_gate(unique, min_topical_relevance=user_min_relevance)
+
     # Aggregate mean topical relevance per subtopic for the run summary
     rel_acc: dict[str, list[float]] = {}
     for r in unique:
@@ -328,12 +333,11 @@ async def _pipeline_inner(db: AsyncSession, run: CIRun, log) -> None:  # noqa: A
         key = rr.doi or rr.arxiv_id or rr.url
         if key and key not in rr_lookup:
             rr_lookup[key] = rr.id
-    fallback_raw_id = rr_list[0].id if rr_list else None
 
     stored = 0
     for r in unique:
         identity_key = r.doi or r.arxiv_id or r.url
-        raw_id = (rr_lookup.get(identity_key) if identity_key else None) or fallback_raw_id
+        raw_id = rr_lookup.get(identity_key) if identity_key else None
         if not raw_id:
             log.warning("skipping_result_no_raw_id", url=r.url)
             continue
@@ -363,6 +367,7 @@ async def _pipeline_inner(db: AsyncSession, run: CIRun, log) -> None:  # noqa: A
             influential_citations=r.influential_citations,
             venue_tier=r.venue_tier,
             is_preprint=r.is_preprint,
+            arxiv_categories=r.arxiv_categories or [],
             category_tier=r.category_tier,
             raw_score=r.raw_score,
             final_score=r.final_score,

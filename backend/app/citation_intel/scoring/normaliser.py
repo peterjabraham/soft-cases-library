@@ -47,17 +47,10 @@ def normalise_citation_signals(results: list[RawResultData]) -> list[RawResultDa
     # Build lookup from result id → normalised scores
     for r, vel, inf in zip(ss_results, velocities, influentials):
         r.citation_velocity = vel
-        object.__setattr__(r, "_velocity_norm", _minmax(vel, v_min, v_max))
-        object.__setattr__(r, "_influential_norm", _minmax(inf, i_min, i_max))
+        r._velocity_norm = _minmax(vel, v_min, v_max)
+        r._influential_norm = _minmax(inf, i_min, i_max)
 
-    # Zero out for all others
-    ss_set = set(id(r) for r in ss_results)
-    for r in results:
-        if id(r) not in ss_set:
-            if not hasattr(r, "_velocity_norm"):
-                object.__setattr__(r, "_velocity_norm", 0.0)
-            if not hasattr(r, "_influential_norm"):
-                object.__setattr__(r, "_influential_norm", 0.0)
+    # Non-SS results keep their PrivateAttr defaults (0.0)
 
     return results
 

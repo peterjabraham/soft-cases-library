@@ -455,17 +455,26 @@ export default function ResultsPage({ params }: Props) {
                           {result.authors.length > 2 && ` +${result.authors.length - 2}`}
                         </span>
                       )}
-                      {result.url && (
-                        <a
-                          href={result.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-accent hover:underline truncate max-w-xs"
-                        >
-                          {new URL(result.url).hostname.replace("www.", "")}
-                        </a>
-                      )}
+                        {result.url && (() => {
+                          try {
+                            const hostname = new URL(result.url).hostname.replace("www.", "");
+                            return (
+                              <a
+                                href={result.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-accent hover:underline truncate max-w-xs"
+                              >
+                                {hostname}
+                              </a>
+                            );
+                          } catch {
+                            return (
+                              <span className="text-muted truncate max-w-xs">{result.url}</span>
+                            );
+                          }
+                        })()}
                     </div>
                   </div>
 
@@ -504,7 +513,7 @@ export default function ResultsPage({ params }: Props) {
             <Button
               variant="ghost"
               size="sm"
-              disabled={displayed.length < 50}
+              disabled={results.length < 50}
               onClick={() => setPage((p) => p + 1)}
             >
               Next →

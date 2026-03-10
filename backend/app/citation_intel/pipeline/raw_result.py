@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 
 class RawResultData(BaseModel):
@@ -65,5 +65,10 @@ class RawResultData(BaseModel):
 
     # Raw payload for debugging
     raw_payload: Optional[dict] = None
+
+    # Normalised citation signals — set by normaliser, consumed by scorer.
+    # Declared as PrivateAttr so Pydantic manages them correctly.
+    _velocity_norm: float = PrivateAttr(default=0.0)
+    _influential_norm: float = PrivateAttr(default=0.0)
 
     model_config = {"arbitrary_types_allowed": True}

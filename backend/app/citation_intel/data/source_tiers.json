@@ -1,0 +1,73 @@
+{
+  "_meta": {
+    "updated": "2026-03-04",
+    "source": "Initial classification — update after first live runs",
+    "update_policy": "Review after every 10 pipeline runs using domain failure rates"
+  },
+  "tier_1": {
+    "edu_suffix": true,
+    "gov_suffix": true,
+    "domains": [
+      "nature.com",
+      "science.org",
+      "cell.com",
+      "nejm.org",
+      "thelancet.com",
+      "ieee.org",
+      "acm.org",
+      "arxiv.org",
+      "semanticscholar.org",
+      "nist.gov",
+      "whitehouse.gov",
+      "ec.europa.eu",
+      "oecd.org"
+    ],
+    "arxiv_categories_tier_1": ["cs.AI", "cs.LG", "cs.CR", "cs.CL", "cs.CV", "cs.RO", "math", "stat.ML", "physics"]
+  },
+  "tier_2": {
+    "domains": [
+      "ft.com",
+      "reuters.com",
+      "bbc.co.uk",
+      "bbc.com",
+      "nytimes.com",
+      "wsj.com",
+      "economist.com",
+      "bloomberg.com",
+      "theguardian.com",
+      "thetimes.co.uk",
+      "weforum.org",
+      "techcrunch.com",
+      "theverge.com",
+      "wired.com",
+      "mit.edu",
+      "stanford.edu",
+      "oxford.ac.uk",
+      "cam.ac.uk",
+      "deepmind.google",
+      "openai.com",
+      "anthropic.com",
+      "research.google"
+    ]
+  },
+  "tier_3": {
+    "domains": [
+      "simonwillison.net",
+      "martinfowler.com",
+      "substackcdn.com",
+      "substack.com",
+      "medium.com",
+      "towardsdatascience.com",
+      "hbr.org",
+      "mckinsey.com",
+      "bcg.com",
+      "deloitte.com",
+      "accenture.com",
+      "pwc.com",
+      "ey.com",
+      "kpmg.com",
+      "gartner.com",
+      "forrester.com"
+    ]
+  }
+}

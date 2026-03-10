@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0b0f14;
+  --foreground: #e6f0ff;
+  --card: #1b2432;
+  --muted: #a9b6cb;
+  --border: #2a3547;
+  --accent: #5B8DEF;
+  --accent-foreground: #ffffff;
+  --primary: #e6f0ff;
+  --primary-foreground: #0b0f14;
+  --secondary: #1b2432;
+  --secondary-foreground: #e6f0ff;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--background); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* JSON textarea syntax highlight hint */
+.json-area {
+  font-family: "IBM Plex Mono", Menlo, Monaco, "Courier New", monospace;
+  font-size: 12px;
+  line-height: 18px;
+  tab-size: 2;
+}

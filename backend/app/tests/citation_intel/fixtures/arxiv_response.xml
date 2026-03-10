@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:arxiv="http://arxiv.org/schemas/atom"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+  <link href="http://arxiv.org/api/query?search_query=all:prompt+injection" rel="self" type="application/atom+xml"/>
+  <title type="html">ArXiv Query: prompt injection</title>
+  <id>http://arxiv.org/api/xyz</id>
+  <opensearch:totalResults>2</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <opensearch:itemsPerPage>20</opensearch:itemsPerPage>
+
+  <entry>
+    <id>http://arxiv.org/abs/2302.04237v2</id>
+    <title>Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injections</title>
+    <summary>We introduce indirect prompt injection attacks, which allow adversaries to remotely exploit LLM-integrated applications. We analyse the threat landscape and propose defences.</summary>
+    <author><name>Kai Greshake</name></author>
+    <author><name>Sahar Abdelnabi</name></author>
+    <published>2023-02-08T18:00:00Z</published>
+    <arxiv:primary_category term="cs.CR" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CR" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <arxiv:doi>10.1145/3576915.3616633</arxiv:doi>
+  </entry>
+
+  <entry>
+    <id>http://arxiv.org/abs/2307.02483v1</id>
+    <title>Prompt Injection attack against LLM-integrated Applications</title>
+    <summary>Prompt injection attacks pose a serious threat to large language model applications. This paper presents a systematic study of prompt injection techniques including direct injection, indirect injection, and jailbreaking methods.</summary>
+    <author><name>Yi Liu</name></author>
+    <published>2023-07-05T12:00:00Z</published>
+    <arxiv:primary_category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+  </entry>
+</feed>

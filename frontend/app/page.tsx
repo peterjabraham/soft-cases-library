@@ -248,7 +248,7 @@ export default function QueryConfigPage() {
                   before running.
                 </p>
               </div>
-              <Chip variant="outline">Novice flow</Chip>
+              <Chip variant="default">Novice flow</Chip>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
               <input
@@ -268,7 +268,7 @@ export default function QueryConfigPage() {
               </Button>
             </div>
             <p className="text-xs text-muted mt-2">
-              This creates a stage-1 cluster draft (topic -> cluster -> subtopics with starter keywords).
+              This creates a stage-1 cluster draft (topic &rarr; cluster &rarr; subtopics with starter keywords).
             </p>
             {generationInfo && (
               <p className="text-xs text-accent mt-2">{generationInfo}</p>

@@ -38,6 +38,14 @@ class Settings(BaseSettings):
             "Works without it on free tier (1 req/sec)."
         ),
     )
+    openai_api_key: Optional[str] = Field(
+        default=None,
+        description="OpenAI API key for novice cluster generation endpoint",
+    )
+    openai_model: str = Field(
+        default="gpt-5.3",
+        description="OpenAI model for cluster generation",
+    )
     # arXiv requires no key
 
     # === Optional with defaults ===

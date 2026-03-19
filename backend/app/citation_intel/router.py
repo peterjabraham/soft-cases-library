@@ -20,14 +20,16 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Optional
 
+import httpx
 import structlog
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.citation_intel.cluster_parser import ParsedCluster, parse_cluster
+from app.config import get_settings
 from app.database import get_db
 from app.models.ci_models import CICluster, CIRun
 
@@ -91,6 +93,10 @@ class ClusterCreateRequest(BaseModel):
     cluster_config: dict
 
 
+class ClusterGenerateRequest(BaseModel):
+    topic: str = Field(..., min_length=3, max_length=200)
+
+
 class ClusterResponse(BaseModel):
     id: str
     name: str
@@ -98,6 +104,12 @@ class ClusterResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class ClusterGenerateResponse(BaseModel):
+    cluster_config: dict
+    model: str
+    usage: Optional[dict] = None
 
 
 # ── Cluster endpoints ───────────────────────────────────────────────────────
@@ -121,6 +133,57 @@ async def create_cluster(body: ClusterCreateRequest, db: AsyncSession = Depends(
     await db.commit()
     await db.refresh(cluster)
     return cluster
+
+
+@router.post("/clusters/generate", response_model=ClusterGenerateResponse)
+async def generate_cluster(body: ClusterGenerateRequest):
+    """Generate a novice-friendly cluster config from a plain-language topic."""
+    from app.citation_intel.services.openai_cluster_gen import generate_cluster_config
+
+    settings = get_settings()
+    if not settings.openai_api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="OpenAI cluster generation is not configured (missing OPENAI_API_KEY)",
+        )
+
+    topic = body.topic.strip()
+    if not topic:
+        raise HTTPException(status_code=422, detail="Topic cannot be empty")
+
+    try:
+        generated = await generate_cluster_config(
+            topic=topic,
+            api_key=settings.openai_api_key,
+            model=settings.openai_model,
+        )
+        # Re-validate against the strict parser used by run creation.
+        parse_cluster(generated.cluster_config)
+    except httpx.HTTPStatusError as e:
+        msg = "OpenAI request failed"
+        try:
+            provider_detail = e.response.json()
+            if isinstance(provider_detail, dict):
+                msg = provider_detail.get("error", {}).get("message", msg)
+        except Exception:
+            pass
+        raise HTTPException(status_code=502, detail=f"Cluster generation failed: {msg}")
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=f"Cluster generation failed: {str(e)}")
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Generated cluster failed schema validation: {str(e)}",
+        )
+    except Exception as e:
+        logger.exception("cluster_generate_failed", error=str(e))
+        raise HTTPException(status_code=500, detail="Cluster generation failed unexpectedly")
+
+    return ClusterGenerateResponse(
+        cluster_config=generated.cluster_config,
+        model=generated.model,
+        usage=generated.usage,
+    )
 
 
 @router.get("/clusters", response_model=list[ClusterResponse])

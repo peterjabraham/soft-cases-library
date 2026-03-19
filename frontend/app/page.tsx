@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Textarea } from "@/components/ui/input";
-import { createRun, listClusters, saveCluster } from "@/lib/api";
+import { createRun, generateClusterFromTopic, listClusters, saveCluster } from "@/lib/api";
 import type { ClusterConfig, SavedCluster, SourceConfig } from "@/lib/types";
 
 const EXAMPLE_CLUSTER: ClusterConfig = {
@@ -42,18 +42,12 @@ const SOURCE_LABELS: Record<keyof SourceConfig, { label: string; hint: string }>
 export default function QueryConfigPage() {
   const router = useRouter();
 
-  const [clusterJson, setClusterJson] = useState(
-    JSON.stringify(EXAMPLE_CLUSTER, null, 2),
-  );
+  const [clusterJson, setClusterJson] = useState("");
   const [parseError, setParseError] = useState<string | null>(null);
-  const [parsedCluster, setParsedCluster] = useState<ClusterConfig | null>(EXAMPLE_CLUSTER);
+  const [parsedCluster, setParsedCluster] = useState<ClusterConfig | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const [selectedSubtopics, setSelectedSubtopics] = useState<Set<string>>(
-    () =>
-      new Set(
-        EXAMPLE_CLUSTER.clusters.flatMap((c) => c.subtopics.map((s) => s.name)),
-      ),
-  );
+  const [selectedSubtopics, setSelectedSubtopics] = useState<Set<string>>(new Set());
   const [sources, setSources] = useState<SourceConfig>({
     perplexity: true,
     semantic_scholar: true,
@@ -63,6 +57,9 @@ export default function QueryConfigPage() {
   const [minScore, setMinScore] = useState(0);
   const [clusterName, setClusterName] = useState("");
   const [savedClusters, setSavedClusters] = useState<SavedCluster[]>([]);
+  const [topicInput, setTopicInput] = useState("");
+  const [generatingCluster, setGeneratingCluster] = useState(false);
+  const [generationInfo, setGenerationInfo] = useState<string>("");
 
   const [submitting, setSubmitting] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -115,6 +112,7 @@ export default function QueryConfigPage() {
     setClusterJson(json);
     parseJson(json);
     setClusterName(cluster.name);
+    setShowAdvanced(true);
   };
 
   const allSubtopics = parsedCluster
@@ -180,6 +178,30 @@ export default function QueryConfigPage() {
     }
   };
 
+  const handleGenerateCluster = async () => {
+    const topic = topicInput.trim();
+    if (topic.length < 3) {
+      setError("Enter a topic with at least 3 characters.");
+      return;
+    }
+    setError("");
+    setGenerationInfo("");
+    setGeneratingCluster(true);
+    try {
+      const generated = await generateClusterFromTopic(topic);
+      const json = JSON.stringify(generated.cluster_config, null, 2);
+      parseJson(json);
+      setClusterName(topic);
+      setGenerationInfo(
+        `Generated with ${generated.model}. Review and edit before starting discovery.`,
+      );
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to generate cluster");
+    } finally {
+      setGeneratingCluster(false);
+    }
+  };
+
   return (
     <div className="py-12">
       {/* Header */}
@@ -216,45 +238,99 @@ export default function QueryConfigPage() {
         {/* ── Left: Cluster Config ─────────────────────────────────── */}
         <div className="space-y-4">
           <Card padding="lg">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-bold text-foreground">
-                Cluster Configuration
-              </h2>
-              <a
-                href="#"
-                className="text-xs text-accent hover:underline"
-                onClick={(e) => {
-                  e.preventDefault();
-                  parseJson(JSON.stringify(EXAMPLE_CLUSTER, null, 2));
-                }}
-              >
-                Load example
-              </a>
-            </div>
-
-            <Textarea
-              label="Cluster JSON"
-              id="cluster-json"
-              rows={18}
-              value={clusterJson}
-              onChange={(e) => parseJson(e.target.value)}
-              error={parseError ?? undefined}
-              placeholder='{ "pillar": "...", "clusters": [...] }'
-              className="font-mono text-xs"
-            />
-
-            {parsedCluster && !parseError && (
-              <div className="mt-3 p-3 bg-green-500/5 border border-green-500/20 rounded-lg">
-                <p className="text-xs text-green-400 font-medium">
-                  ✓ Valid — {parsedCluster.pillar} · {allSubtopics.length} subtopic
-                  {allSubtopics.length !== 1 ? "s" : ""}
+            <div className="flex items-start justify-between mb-3 gap-3">
+              <div>
+                <h2 className="text-base font-bold text-foreground">
+                  New to cluster JSON?
+                </h2>
+                <p className="text-xs text-muted mt-1">
+                  Enter your topic and generate a starter cluster draft. You can edit it
+                  before running.
                 </p>
               </div>
+              <Chip variant="outline">Novice flow</Chip>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                value={topicInput}
+                onChange={(e) => setTopicInput(e.target.value)}
+                placeholder="e.g. Prompt injection in enterprise copilots"
+                className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleGenerateCluster}
+                disabled={generatingCluster || topicInput.trim().length < 3}
+              >
+                {generatingCluster ? "Generating…" : "Generate subtopics"}
+              </Button>
+            </div>
+            <p className="text-xs text-muted mt-2">
+              This creates a stage-1 cluster draft (topic -> cluster -> subtopics with starter keywords).
+            </p>
+            {generationInfo && (
+              <p className="text-xs text-accent mt-2">{generationInfo}</p>
             )}
+            <div className="mt-3 pt-3 border-t border-border/60">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAdvanced((prev) => !prev);
+                  if (!showAdvanced && !clusterJson) {
+                    parseJson(JSON.stringify(EXAMPLE_CLUSTER, null, 2));
+                  }
+                }}
+                className="text-xs text-accent hover:underline"
+              >
+                {showAdvanced ? "Hide advanced JSON editor" : "Show advanced JSON editor"}
+              </button>
+            </div>
           </Card>
 
+          {showAdvanced && (
+            <Card padding="lg">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-bold text-foreground">
+                  Cluster Configuration
+                </h2>
+                <a
+                  href="#"
+                  className="text-xs text-accent hover:underline"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    parseJson(JSON.stringify(EXAMPLE_CLUSTER, null, 2));
+                  }}
+                >
+                  Load example
+                </a>
+              </div>
+
+              <Textarea
+                label="Cluster JSON"
+                id="cluster-json"
+                rows={18}
+                value={clusterJson}
+                onChange={(e) => parseJson(e.target.value)}
+                error={parseError ?? undefined}
+                placeholder='{ "pillar": "...", "clusters": [...] }'
+                className="font-mono text-xs"
+              />
+
+              {parsedCluster && !parseError && (
+                <div className="mt-3 p-3 bg-green-500/5 border border-green-500/20 rounded-lg">
+                  <p className="text-xs text-green-400 font-medium">
+                    ✓ Valid — {parsedCluster.pillar} · {allSubtopics.length} subtopic
+                    {allSubtopics.length !== 1 ? "s" : ""}
+                  </p>
+                </div>
+              )}
+            </Card>
+          )}
+
           {/* Save cluster */}
-          {parsedCluster && !parseError && (
+          {showAdvanced && parsedCluster && !parseError && (
             <Card>
               <p className="text-sm text-muted mb-2">Save this cluster for reuse (optional)</p>
               <div className="flex gap-2">

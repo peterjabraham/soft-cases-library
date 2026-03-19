@@ -22,6 +22,12 @@ export interface SavedCluster {
   created_at: string;
 }
 
+export interface GeneratedClusterResponse {
+  cluster_config: ClusterConfig;
+  model: string;
+  usage?: Record<string, unknown> | null;
+}
+
 // ── Run types ────────────────────────────────────────────────────────────────
 
 export type RunStatus =

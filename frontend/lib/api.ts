@@ -7,6 +7,7 @@ import type {
   ResultFilters,
   Run,
   SavedCluster,
+  GeneratedClusterResponse,
   ScoredResult,
   SourceConfig,
 } from "./types";
@@ -56,6 +57,17 @@ export async function saveCluster(
     body: JSON.stringify({ name, cluster_config }),
   });
   return handleResponse<SavedCluster>(res);
+}
+
+export async function generateClusterFromTopic(
+  topic: string,
+): Promise<GeneratedClusterResponse> {
+  const res = await fetch(`${getBaseUrl()}/api/v1/clusters/generate`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ topic }),
+  });
+  return handleResponse<GeneratedClusterResponse>(res);
 }
 
 // ── Runs ──────────────────────────────────────────────────────────────────────

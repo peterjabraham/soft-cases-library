@@ -33,16 +33,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable}`}>
       <body className="bg-background text-foreground font-sans antialiased min-h-screen">
-        {/* Nav bar only loads in production — avoids Next.js 15 async param
-            warnings from the shell script during local development */}
-        {process.env.NODE_ENV === "production" && (
-          <Script
-            src={`${shellUrl}/nav-bar.v1.js`}
-            data-service="soft-cases"
-            data-shell-url={shellUrl}
-            strategy="afterInteractive"
-          />
-        )}
+        <Script
+          src={`${shellUrl}/nav-bar.v1.js`}
+          data-service="soft-cases"
+          data-shell-url={shellUrl}
+          strategy="afterInteractive"
+        />
         <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {children}
         </main>

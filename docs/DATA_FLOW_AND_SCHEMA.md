@@ -218,7 +218,7 @@ Operational note: `ci_scored_results.raw_result_id` now requires a strict canoni
 
 ### `POST /clusters/generate` (novice flow)
 - Input: `{ "topic": "..." }`
-- Provider: OpenAI chat completions (`OPENAI_MODEL`, default `gpt-5.3`)
+- Provider: OpenAI chat completions (`OPENAI_MODEL`, default `gpt-5.4-nano`)
 - Output: strict `cluster_config` JSON matching the same schema as manual editor input
 - Validation: generated output is re-validated with the same parser used by `POST /runs`
 - Failure modes:

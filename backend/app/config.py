@@ -43,7 +43,7 @@ class Settings(BaseSettings):
         description="OpenAI API key for novice cluster generation endpoint",
     )
     openai_model: str = Field(
-        default="gpt-5.3",
+        default="gpt-5.4-nano",
         description="OpenAI model for cluster generation",
     )
     # arXiv requires no key
